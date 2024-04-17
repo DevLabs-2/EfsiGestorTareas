@@ -1,5 +1,7 @@
 var arrayProyectos = [];
+console.log(arrayProyectos);
 var proyectoActual;
+
 
 function IngresarProyecto(){
     let input = document.getElementById("InputNombreProyecto");
@@ -7,13 +9,16 @@ function IngresarProyecto(){
     let proyecto = {
         nombre: nombreProyecto,
         desc: null,
-        tareas: []
+        taskArray: []
     }
+    console.log(proyecto);
     AgregarProyectoAArray(proyecto);
     MostrarProyecto(proyecto);
 }
 
 function AgregarProyectoAArray(proyecto){
+    console.log(arrayProyectos);
+    console.log(proyecto)
     arrayProyectos.push(proyecto);
     SyncStorage("arrayProyectos", arrayProyectos);
 }
@@ -54,10 +59,12 @@ function EliminarProyecto(proyecto){
 
 function PageLoad(){
     let array = GetFromStorage('arrayProyectos');
-    SyncStorage("arrayProyectos", array);
-    array.forEach(element => {
-        MostrarProyecto(element);
-    });  
+    if(array!=null){
+        SyncStorage("arrayProyectos", array);
+        array.forEach(element => {
+            MostrarProyecto(element);
+        });  
+    }
 }
 
 function IrAPaginaProyecto(proyecto){
@@ -98,7 +105,34 @@ function CargarProyecto(){
     proyectoActual = GetFromStorage("proyectoActual");
     console.log(proyectoActual);
     let titulo = document.getElementById("h1Titulo");
-    let p = document.getElementById("pDesc");
-    p.innerHTML = "AAAA";
     titulo.innerHTML = proyectoActual.nombre;   
+}
+
+
+//Tareas
+function AgregarTarea(){
+    // addEventListener(DOMContent)
+    let tagInput = document.getElementById("inputTaskTitle");
+    if(tagInput.value != ""){
+        let displayArray = [];
+        var divDisplay = document.getElementById("divDisplay");
+        divDisplay.innerHTML = "";
+        let task = {title: "", desc: "", crossed: false, expire: "undefined"};
+        task.title = tagInput.value;
+        //Input desc y expire
+        proyectoActual.taskArray.push(task);
+        displayArray = proyectoActual.taskArray;
+        tagInput.value = "";
+
+        displayArray.forEach(element => {
+            let pTaskTitle = document.createElement("p");
+            let pExpire = document.createElement("p");
+            pTaskTitle.innerHTML = `${element.title}:`;
+            var divPanel = document.createElement("div");
+            console.log(divDisplay)
+            divPanel.appendChild(pTaskTitle);
+            divPanel.appendChild(pExpire);
+            divDisplay.appendChild(divPanel);
+        });
+    }
 }
