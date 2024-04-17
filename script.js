@@ -8,13 +8,16 @@ function IngresarProyecto(){
         desc: null,
         tareas: []
     }
-    AgregarProyecto(proyecto);
+    AgregarProyectoAArray(proyecto);
+    MostrarProyecto(proyecto);
 }
 
-
-function AgregarProyecto(proyecto){
+function AgregarProyectoAArray(proyecto){
     arrayProyectos.push(proyecto);
-    SetToStorage('arrayProyectos', arrayProyectos);
+    SyncStorage(arrayProyectos);
+}
+
+function MostrarProyecto(proyecto){
     let divProyectos = document.getElementById("divProyectos");
     let divProy = document.createElement("div");
 
@@ -39,20 +42,10 @@ function AgregarProyecto(proyecto){
 }
 
 function EliminarProyecto(proyecto){
-    console.log("Eliminar Proyecto");
     let array = GetFromStorage('arrayProyectos')
-    let encontrado = false;
-    let i = 0;
-    
-    while(!encontrado){
-        console.log(array[i].nombre, proyecto.nombre)
-        if(array[i].nombre == proyecto.nombre){
-            encontrado = true;
-            array = array.pop();
-        }
-        i++;
-    }
-    SetToStorage('arrayProyectos',array)
+    let index = array.indexOf(proyecto);
+    array.splice(index,1)
+    SyncStorage(array);
     LimpiarProyectos();
     PageLoad();
 }
@@ -60,16 +53,14 @@ function EliminarProyecto(proyecto){
 function PageLoad(){
     let array = GetFromStorage('arrayProyectos');
     array.forEach(element => {
-        AgregarProyecto(element);
-    });
-    
+        MostrarProyecto(element);
+    });  
 }
 
 function PaginaProyecto(proyecto){
     window.location.href = "proyecto.html";
     let titulo = document.getElementById("h1Titulo");
     titulo.textContent = proyecto.nombre;
-    console.log(`nombre: ${proyecto.nombre}`);
 }
 
 function LimpiarProyectos(){
@@ -83,4 +74,9 @@ function GetFromStorage(str){
 function SetToStorage(varName, elem){
     sessionStorage.removeItem(varName);
     sessionStorage.setItem(varName, JSON.stringify(elem));
+}
+
+function SyncStorage(array){
+    SetToStorage("arrayProyectos", array);
+    arrayProyectos = array;
 }
