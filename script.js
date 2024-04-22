@@ -126,6 +126,12 @@ function FindProyecto(proyecto, array){
     return index;
 }
 
+function FindTarea(proyecto, tarea){
+    const igualNombre = (element) => element.title == tarea.title;
+    let index = proyecto.taskArray.findIndex(igualNombre);
+    return index;
+}
+
 //Tareas
 function AgregarTarea(){
     let inputTitle = document.getElementById('inputTaskTitle');
@@ -154,13 +160,22 @@ function DisplayTasks(array){
         let btnTick = document.createElement("button");
         btnTick.style.borderRadius = "100%";
         btnTick.style.padding = "1em";
-        btnTick.onclick(TaskTick());
+        btnTick.onclick = function() {TaskTick(element);};
         let pTaskTitle = document.createElement("p");
         let pTaskDesc = document.createElement("p");
         pTaskTitle.innerHTML = `${element.title}:`;
-        pTaskDesc.innerHTML = `${element.desc} <br> Válido hasta: ${element.expire}`;
+        if(element.crossed){
+            pTaskTitle.style.textDecoration = "line-through";
+            pTaskDesc.innerHTML = `${element.desc}`; 
+        }
+        else{
+            pTaskDesc.innerHTML = `${element.desc} <br> Válido hasta: ${element.expire}`;
+        }
+        
         var divPanel = document.createElement("div");
+        var divDisplay = document.getElementById("divDisplay");
         console.log(divDisplay)
+        
         divPanel.appendChild(pTaskTitle);
         divPanel.appendChild(pTaskDesc);
         divPanel.appendChild(btnTick);
@@ -168,6 +183,14 @@ function DisplayTasks(array){
     });
 }
 
-function TaskTick(proyecto){
-
+function TaskTick(tarea){
+    tarea.crossed = !tarea.crossed;
+    let proyecto = GetFromStorage("proyectoActual");
+    let arrayProyectos = GetFromStorage("arrayProyectos");
+    let indexProyecto = FindProyecto(proyecto, arrayProyectos);
+    let indexTarea = FindTarea(proyecto, tarea);
+    proyecto.taskArray[indexTarea] = tarea;
+    arrayProyectos[indexProyecto] = proyecto;
+    SyncStorage("proyectoActual",proyecto);
+    SyncStorage("arrayProyectos", arrayProyectos);
 }
