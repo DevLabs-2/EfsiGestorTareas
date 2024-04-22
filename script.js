@@ -24,7 +24,7 @@ function AgregarProyectoAArray(proyecto){
 }
 
 function MostrarProyecto(proyecto){
-    let divProyectos = document.getElementById("divProyectos");
+    let divDisplay = document.getElementById("divDisplay");
     let divProy = document.createElement("div");
 
     let divLink = document.createElement("div");
@@ -44,7 +44,7 @@ function MostrarProyecto(proyecto){
     imgBorrar.className = "imgborrar";
     btnBorrar.appendChild(imgBorrar);
 
-    divProyectos.appendChild(divProy);
+    divDisplay.appendChild(divProy);
 }
 
 function EliminarProyecto(proyecto){
@@ -57,6 +57,7 @@ function EliminarProyecto(proyecto){
 }
 
 function PageLoad(){
+    document.getElementById("divDisplay").innerHTML = "";
     let array = GetFromStorage('arrayProyectos');
     if(array!=null){
         SyncStorage("arrayProyectos", array);
@@ -76,7 +77,7 @@ function VolverAlIndex(proyecto){
 }
 
 function LimpiarProyectos(){
-    document.getElementById("divProyectos").innerHTML = "";
+    document.getElementById("divDisplay").innerHTML = "";
 }
 
 function GetFromStorage(str){
@@ -110,14 +111,17 @@ function CargarProyecto(){
     let titulo = document.getElementById("h1Titulo");
     titulo.innerHTML = proyectoActual.nombre;
     var divDisplay = document.getElementById("divDisplay");
+    divDisplay.innerHTML = "";
     DisplayTasks(proyectoActual.taskArray); 
 }
 
 function UpdateProyecto(proyecto){
-    let arrayProyectos = GetFromStorage("arrayProyectos");
-    let index = FindProyecto(proyecto, arrayProyectos);
-    arrayProyectos[index] = proyecto;
-    SetToStorage("arrayProyectos", arrayProyectos);
+    let localArrayProyectos = GetFromStorage("arrayProyectos");
+    let index = FindProyecto(proyecto, localArrayProyectos);
+    localArrayProyectos[index] = proyecto;
+    SetToStorage("arrayProyectos", localArrayProyectos);
+    arrayProyectos = localArrayProyectos;
+    
 }
 
 function FindProyecto(proyecto, array){
@@ -137,6 +141,7 @@ function AgregarTarea(){
     let inputTitle = document.getElementById('inputTaskTitle');
     let inputDesc = document.getElementById('inputTaskDesc');
     let inputExpire = document.getElementById('inputTaskExpire');
+    let localProyectoActual = GetFromStorage("proyectoActual");
     if(inputTitle.value != "" && inputDesc.value != ""){
         let displayArray = [];
         var divDisplay = document.getElementById("divDisplay");
@@ -146,27 +151,29 @@ function AgregarTarea(){
         task.title = inputTitle.value;
         task.desc = inputDesc.value;
         task.expire = inputExpire.value;
-        //Input desc y expire
-        proyectoActual.taskArray.push(task);
-        UpdateProyecto(proyectoActual);
-        displayArray = proyectoActual.taskArray;
+        localProyectoActual.taskArray.push(task);
+        UpdateProyecto(localProyectoActual);
+        displayArray = localProyectoActual.taskArray;
         inputTitle.value = "";
         inputDesc.value = "";
         DisplayTasks(displayArray)
+        SyncStorage("proyectoActual",localProyectoActual);
     }
 }
 function DisplayTasks(array){
     array.forEach(element => {
         let btnTick = document.createElement("button");
         btnTick.style.borderRadius = "100%";
-        btnTick.style.padding = "1em";
+        btnTick.style.width = "35px";
+        btnTick.style.height = "35px";
         btnTick.onclick = function() {TaskTick(element);};
         let pTaskTitle = document.createElement("p");
         let pTaskDesc = document.createElement("p");
         pTaskTitle.innerHTML = `${element.title}:`;
         if(element.crossed){
             pTaskTitle.style.textDecoration = "line-through";
-            pTaskDesc.innerHTML = `${element.desc}`; 
+            pTaskDesc.innerHTML = `${element.desc}`;
+            btnTick.innerHTML = `<img src="tick.png" alt="" class="btntickimg">`;
         }
         else{
             pTaskDesc.innerHTML = `${element.desc} <br> Válido hasta: ${element.expire}`;
@@ -185,12 +192,39 @@ function DisplayTasks(array){
 
 function TaskTick(tarea){
     tarea.crossed = !tarea.crossed;
-    let proyecto = GetFromStorage("proyectoActual");
-    let arrayProyectos = GetFromStorage("arrayProyectos");
-    let indexProyecto = FindProyecto(proyecto, arrayProyectos);
-    let indexTarea = FindTarea(proyecto, tarea);
-    proyecto.taskArray[indexTarea] = tarea;
-    arrayProyectos[indexProyecto] = proyecto;
-    SyncStorage("proyectoActual",proyecto);
-    SyncStorage("arrayProyectos", arrayProyectos);
+    let localProyecto = GetFromStorage("proyectoActual");
+    let indexTarea = FindTarea(localProyecto, tarea);
+    localProyecto.taskArray[indexTarea] = tarea;
+    SyncStorage("proyectoActual",localProyecto);
+    proyectoActual = localProyecto;
+    UpdateProyecto(localProyecto);
+    CargarProyecto();
+}
+
+function TareasPorVencimiento(){
+    MostrarBtnVolver();
+    let divDisplay = document.getElementById("divDisplay");
+    divDisplay.innerHTML = "";
+    let inputDate = document.getElementById("InputFechaVencimiento").value;
+    let dateTaskArray = [];
+    arrayProyectos.forEach(element => {
+        element.taskArray.forEach(task => {
+            if(task.expire == inputDate){
+                dateTaskArray.push(task);
+            }
+        });
+        let h2TitleProyecto = document.createElement("h2");
+        h2TitleProyecto.innerHTML = `${element.nombre}:`;
+        DisplayTasks(dateTaskArray);
+        dateTaskArray = [];
+    });
+
+}
+
+function MostrarBtnVolver(){
+    let div = document.getElementById("header");
+    let btn = document.createElement("button");
+    btn.innerHTML = "Volver a Proyectos"
+    btn.onclick = function(){PageLoad();};
+    div.appendChild(btn);
 }
