@@ -2,8 +2,8 @@ var arrayProyectos = [];
 console.log(arrayProyectos);
 var proyectoActual;
 
-
 function IngresarProyecto(){
+    
     let input = document.getElementById("InputNombreProyecto");
     let nombreProyecto = input.value;
     let proyecto = {
@@ -11,14 +11,17 @@ function IngresarProyecto(){
         desc: null,
         taskArray: []
     }
-    console.log(proyecto);
-    AgregarProyectoAArray(proyecto);
-    MostrarProyecto(proyecto);
+    if(FindProyecto(proyecto, arrayProyectos) == -1 && nombreProyecto != ""){
+        
+        AgregarProyectoAArray(proyecto);
+        MostrarProyecto(proyecto);
+    }
+    else{
+        alert("El nombre del proyecto no es correcto o ya existe");
+    }
 }
 
 function AgregarProyectoAArray(proyecto){
-    console.log(arrayProyectos);
-    console.log(proyecto)
     arrayProyectos.push(proyecto);
     SyncStorage("arrayProyectos", arrayProyectos);
 }
@@ -43,6 +46,7 @@ function MostrarProyecto(proyecto){
     imgBorrar.src = "delete.png";
     imgBorrar.className = "imgborrar";
     btnBorrar.appendChild(imgBorrar);
+    divProy.className = "divProy";
 
     divDisplay.appendChild(divProy);
 }
@@ -127,6 +131,7 @@ function UpdateProyecto(proyecto){
 function FindProyecto(proyecto, array){
     const igualNombre = (element) => element.nombre == proyecto.nombre;
     let index = array.findIndex(igualNombre);
+    console.log(index);
     return index;
 }
 
@@ -167,7 +172,7 @@ function DisplayTasks(array){
         btnTick.style.width = "35px";
         btnTick.style.height = "35px";
         btnTick.onclick = function() {TaskTick(element);};
-        let pTaskTitle = document.createElement("p");
+        let pTaskTitle = document.createElement("h4");
         let pTaskDesc = document.createElement("p");
         pTaskTitle.innerHTML = `${element.title}:`;
         if(element.crossed){
@@ -182,11 +187,14 @@ function DisplayTasks(array){
         var divPanel = document.createElement("div");
         var divDisplay = document.getElementById("divDisplay");
         console.log(divDisplay)
-        
+        let divLine = document.createElement("div");
+        divLine.className = "line";
         divPanel.appendChild(pTaskTitle);
         divPanel.appendChild(pTaskDesc);
-        divPanel.appendChild(btnTick);
-        divDisplay.appendChild(divPanel);
+        divLine.appendChild(divPanel);
+        divLine.appendChild(btnTick);
+        divDisplay.appendChild(divLine);
+        divDisplay.appendChild(document.createElement("hr"));
     });
 }
 
@@ -225,6 +233,8 @@ function MostrarBtnVolver(){
     let div = document.getElementById("header");
     let btn = document.createElement("button");
     btn.innerHTML = "Volver a Proyectos"
-    btn.onclick = function(){PageLoad();};
+    btn.onclick = function(){
+        btn.remove();
+        PageLoad();};
     div.appendChild(btn);
 }
